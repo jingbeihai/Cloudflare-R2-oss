@@ -1,222 +1,160 @@
 <template>
   <div class="main" @dragenter.prevent @dragover.prevent @drop.prevent="onDrop">
-    <progress
-      v-if="uploadProgress !== null"
-      :value="uploadProgress"
-      max="100"
-    ></progress>
-    <UploadPopup
-      v-model="showUploadPopup"
-      @upload="onUploadClicked"
-      @createFolder="createFolder"
-    ></UploadPopup>
-    <button class="upload-button circle" @click="showUploadPopup = true">
-      <img
-        style="filter: invert(100%)"
-        src="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/4.0.0/png/file/upload_file/materialicons/36dp/2x/baseline_upload_file_black_36dp.png"
-        alt="Upload"
-        width="36"
-        height="36"
-        @contextmenu.prevent
-      />
-    </button>
-    <div class="app-bar">
-      <span class="app-title">📁 文件库</span>
-      <input type="search" v-model="search" aria-label="Search" placeholder="搜索文件..." />
-      <div class="menu-button">
-        <button class="circle toggle-theme" @click="toggleTheme" :title="currentTheme === 'dark' ? '切换浅色' : '切换深色'">
-          <span v-text="currentTheme === 'dark' ? '☀️' : '🌙'"></span>
+    <!-- Title Bar -->
+    <div class="title-bar">
+      <div class="title-left">
+        <h1 class="title-text">📁 文件库</h1>
+        <span class="title-domain">drive.7988798.xyz</span>
+      </div>
+      <div class="title-right">
+        <button class="title-btn" @click="toggleTheme" :title="currentTheme === 'dark' ? '切换浅色' : '切换深色'">
+          {{ currentTheme === 'dark' ? '☀️' : '🌙' }}
         </button>
-        <button class="circle" @click="showMenu = true">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 448 512"
-            width="20"
-            height="20"
-            title="Menu"
-            style="display: block"
-          >
-            <path
-              d="M120 256c0 30.9-25.1 56-56 56s-56-25.1-56-56s25.1-56 56-56s56 25.1 56 56zm160 0c0 30.9-25.1 56-56 56s-56-25.1-56-56s25.1-56 56-56s56 25.1 56 56zm104 56c-30.9 0-56-25.1-56-56s25.1-56 56-56s56 25.1 56 56s-25.1 56-56 56z"
-            />
-          </svg>
-        </button>
+        <button class="title-btn" @click="showMenu = true">⚙️</button>
         <Menu
           v-model="showMenu"
-          :items="[{ text: '名称A-Z' }, { text: '大小↑' } ,{ text: '大小↓' }, { text: '粘贴' }]"
+          :items="menuItems"
           @click="onMenuClick"
         />
       </div>
     </div>
-    <ul class="file-list">
-      <li v-if="cwd !== ''">
-        <div
-          tabindex="0"
-          class="file-item"
-          @click="cwd = cwd.replace(/[^\/]+\/$/, '')"
-          @contextmenu.prevent
-        >
-          <div class="file-icon">
-            <img
-              src="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/4.0.0/png/file/folder/materialicons/36dp/2x/baseline_folder_black_36dp.png"
-              width="36"
-              height="36"
-              alt="Folder"
-            />
-          </div>
-          <span class="file-name">..</span>
-        </div>
-      </li>
-      <li v-for="folder in filteredFolders" :key="folder">
-        <div
-          tabindex="0"
-          class="file-item"
-          @click="cwd = folder"
-          @contextmenu.prevent="
-            showContextMenu = true;
-            focusedItem = folder;
-          "
-        >
-          <div class="file-icon">
-            <img
-              src="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/4.0.0/png/file/folder/materialicons/36dp/2x/baseline_folder_black_36dp.png"
-              width="36"
-              height="36"
-              alt="Folder"
-            />
-          </div>
-          <span
-            class="file-name"
-            v-text="folder.match(/.*?([^/]*)\/?$/)[1]"
-          ></span>
-          <div style="margin-right: 10px;margin-left: auto;"
-            @click.stop="
-              showContextMenu = true;
-              focusedItem = folder;
-            "
-            >
-              <svg viewBox="0 0 24 24" style="height: 30px; width: 30px;"><path fill="currentColor" d="M10.5,12A1.5,1.5 0 0,1 12,10.5A1.5,1.5 0 0,1 13.5,12A1.5,1.5 0 0,1 12,13.5A1.5,1.5 0 0,1 10.5,12M10.5,16.5A1.5,1.5 0 0,1 12,15A1.5,1.5 0 0,1 13.5,16.5A1.5,1.5 0 0,1 12,18A1.5,1.5 0 0,1 10.5,16.5M10.5,7.5A1.5,1.5 0 0,1 12,6A1.5,1.5 0 0,1 13.5,7.5A1.5,1.5 0 0,1 12,9A1.5,1.5 0 0,1 10.5,7.5M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z"></path></svg>
-          </div>
-        </div>
-      </li>
-      <li v-for="file in filteredFiles" :key="file.key">
-        <div
-          @click="preview(`/raw/${file.key}`)"
-          @contextmenu.prevent="
-            showContextMenu = true;
-            focusedItem = file;
-          "
-        >
-          <div class="file-item">
-            <MimeIcon
-              :content-type="file.httpMetadata.contentType"
-              :thumbnail="
-                file.customMetadata.thumbnail
-                  ? `/raw/_$flaredrive$/thumbnails/${file.customMetadata.thumbnail}.png`
-                  : null
-              "
-            />
-            <div>
-              <div class="file-name" v-text="file.key.split('/').pop()"></div>
-              <div class="file-attr">
-                <span v-text="new Date(file.uploaded).toLocaleString()"></span>
-                <span v-text="formatSize(file.size)"></span>
-              </div>
-            </div>
-            <div style="margin-right: 10px;margin-left: auto;"
-            @click.stop="
-              showContextMenu = true;
-              focusedItem = file;
-            "
-            >
-              <svg viewBox="0 0 24 24" style="height: 30px; width: 30px;"><path fill="currentColor" d="M10.5,12A1.5,1.5 0 0,1 12,10.5A1.5,1.5 0 0,1 13.5,12A1.5,1.5 0 0,1 12,13.5A1.5,1.5 0 0,1 10.5,12M10.5,16.5A1.5,1.5 0 0,1 12,15A1.5,1.5 0 0,1 13.5,16.5A1.5,1.5 0 0,1 12,18A1.5,1.5 0 0,1 10.5,16.5M10.5,7.5A1.5,1.5 0 0,1 12,6A1.5,1.5 0 0,1 13.5,7.5A1.5,1.5 0 0,1 12,9A1.5,1.5 0 0,1 10.5,7.5M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z"></path></svg>
-            </div>
-          </div>
-        </div>
-      </li>
-    </ul>
-    <div v-if="loading" style="margin-top: 12px; text-align: center">
-      <span>加载中...</span>
+
+    <!-- Storage Bar -->
+    <div class="storage-bar-wrap">
+      <div class="storage-info">
+        <span>已用 {{ formatSize(storageUsed) }} / {{ formatSize(storageTotal) }}</span>
+        <span>{{ storagePercent }}%</span>
+      </div>
+      <div class="storage-bar">
+        <div class="storage-bar-fill" :style="{ width: storagePercent + '%' }"></div>
+      </div>
     </div>
-    <div
-      v-else-if="!filteredFiles.length && !filteredFolders.length"
-      style="margin-top: 12px; text-align: center"
-    >
-      <span>没有文件</span>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input type="search" v-model="search" placeholder="🔍 搜索文件..." class="toolbar-search" />
+      <div class="toolbar-actions">
+        <button class="tb-btn primary" @click="showUploadPopup = true">📤 上传</button>
+        <button class="tb-btn" @click="createFolder">📁 新建</button>
+        <button class="tb-btn" @click="fetchFiles">🔄 刷新</button>
+        <button class="tb-btn" @click="batchMode = !batchMode">{{ batchMode ? '✅ 完成' : '📋 批量' }}</button>
+      </div>
     </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <button class="ftab" :class="{ active: activeFilter === 'all' }" @click="activeFilter = 'all'">全部</button>
+      <button class="ftab" :class="{ active: activeFilter === 'folder' }" @click="activeFilter = 'folder'">📁 文件夹</button>
+      <button class="ftab" :class="{ active: activeFilter === 'image' }" @click="activeFilter = 'image'">🖼️ 图片</button>
+      <button class="ftab" :class="{ active: activeFilter === 'video' }" @click="activeFilter = 'video'">🎬 视频</button>
+      <button class="ftab" :class="{ active: activeFilter === 'doc' }" @click="activeFilter = 'doc'">📄 文档</button>
+      <button class="ftab" :class="{ active: activeFilter === 'archive' }" @click="activeFilter = 'archive'">📦 压缩包</button>
+      <button class="ftab" :class="{ active: activeFilter === 'audio' }" @click="activeFilter = 'audio'">🎵 音频</button>
+    </div>
+
+    <!-- Upload Popup -->
+    <UploadPopup v-model="showUploadPopup" @upload="onUploadClicked" @createFolder="createFolder" />
+
+    <!-- File Table Header -->
+    <div class="table-header">
+      <div class="th-icon"></div>
+      <div class="th-name">文件名</div>
+      <div class="th-date">修改日期</div>
+      <div class="th-size">大小</div>
+      <div class="th-more"></div>
+    </div>
+
+    <!-- File List -->
+    <div class="table-body">
+      <div v-if="cwd !== ''" class="table-row" @click="cwd = cwd.replace(/[^\/]+\/$/, '')">
+        <div class="td-icon"><span class="fi fi-folder">📁</span></div>
+        <div class="td-name"><span class="file-label">..</span></div>
+        <div class="td-date">—</div>
+        <div class="td-size">—</div>
+        <div class="td-more"></div>
+      </div>
+      <div v-for="folder in filteredFolders" :key="folder" class="table-row"
+        @click="cwd = folder"
+        @contextmenu.prevent="openContextMenu(folder)">
+        <div class="td-icon"><span class="fi fi-folder">📁</span></div>
+        <div class="td-name"><span class="file-label" v-text="folder.match(/.*?([^/]*)\/?$/)[1]"></span></div>
+        <div class="td-date">—</div>
+        <div class="td-size">—</div>
+        <div class="td-more">
+          <button class="row-more" @click.stop="openContextMenu(folder)">⋯</button>
+        </div>
+      </div>
+      <div v-for="file in filteredFiles" :key="file.key" class="table-row"
+        @dblclick="preview(`/raw/${file.key}`)"
+        @contextmenu.prevent="openContextMenu(file)">
+        <div class="td-icon"><FileIcon :file="file" /></div>
+        <div class="td-name">
+          <span class="file-label" v-text="file.key.split('/').pop()"></span>
+        </div>
+        <div class="td-date" v-text="formatDate(file.uploaded)"></div>
+        <div class="td-size" v-text="formatSize(file.size)"></div>
+        <div class="td-more">
+          <button class="row-more" @click.stop="openContextMenu(file)">⋯</button>
+        </div>
+      </div>
+      <div v-if="loading" class="table-loading"><span>加载中...</span></div>
+      <div v-else-if="!filteredFiles.length && !filteredFolders.length && !cwd" class="table-empty">没有文件</div>
+    </div>
+
+    <!-- Context Menu -->
     <Dialog v-model="showContextMenu">
-      <div
-        v-text="focusedItem.key || focusedItem"
-        class="contextmenu-filename"
-        @click.stop.prevent
-      ></div>
-      <ul v-if="typeof focusedItem === 'string'" class="contextmenu-list">
-        <li>
-          <button @click="copyLink(`/?p=${encodeURIComponent(focusedItem)}`)">
-            <span>复制链接</span>
-          </button>
-        </li>
-        <li>
-          <button @click="moveFile(focusedItem + '_$folder$')">
-            <span>移动</span>
-          </button>
-        </li>
-        <li>
-          <button
-            style="color: red"
-            @click="removeFile(focusedItem + '_$folder$')"
-          >
-            <span>删除</span>
-          </button>
-        </li>
+      <div v-text="ctxItem?.key || ctxItem" class="ctx-filename" @click.stop.prevent></div>
+      <ul v-if="typeof ctxItem === 'string'" class="ctx-list">
+        <li><button @click="copyLink(`/?p=${encodeURIComponent(ctxItem)}`)">复制链接</button></li>
+        <li><button @click="moveFile(ctxItem + '_$folder$')">移动</button></li>
+        <li><button class="danger" @click="removeFile(ctxItem + '_$folder$')">删除</button></li>
       </ul>
-      <ul v-else class="contextmenu-list">
-        <li>
-          <button @click="renameFile(focusedItem.key)">
-            <span>重命名</span>
-          </button>
-        </li>
-        <li>
-          <a :href="`/raw/${focusedItem.key}`" target="_blank" download>
-            <span>下载</span>
-          </a>
-        </li>
-        <li>
-          <button @click="clipboard = focusedItem.key">
-            <span>复制</span>
-          </button>
-        </li>
-        <li>
-          <button @click="moveFile(focusedItem.key)">
-            <span>移动</span>
-          </button>
-        </li>
-        <li>
-          <button @click="copyLink(`/raw/${focusedItem.key}`)">
-            <span>复制链接</span>
-          </button>
-        </li>
-        <li>
-          <button style="color: red" @click="removeFile(focusedItem.key)">
-            <span>删除</span>
-          </button>
-        </li>
+      <ul v-else class="ctx-list">
+        <li><button @click="renameFile(ctxItem.key)">重命名</button></li>
+        <li><a :href="`/raw/${ctxItem.key}`" target="_blank" download>下载</a></li>
+        <li><button @click="clipboard = ctxItem.key">复制</button></li>
+        <li><button @click="moveFile(ctxItem.key)">移动</button></li>
+        <li><button @click="copyLink(`/raw/${ctxItem.key}`)">复制链接</button></li>
+        <li><button class="danger" @click="removeFile(ctxItem.key)">删除</button></li>
       </ul>
     </Dialog>
+
+    <!-- Upload Tab -->
+    <div class="upload-tab" v-if="uploadItems.length">
+      <div class="utab-header" @click="uploadPanelOpen = !uploadPanelOpen">
+        <div class="utab-left">
+          <span>📤 上传进度</span>
+          <span class="utab-badge">{{ activeUploads }}</span>
+        </div>
+        <span class="utab-arrow" :class="{ open: uploadPanelOpen }">▾</span>
+      </div>
+      <div class="utab-body" v-show="uploadPanelOpen">
+        <div class="utab-item" v-for="item in uploadItems" :key="item.id">
+          <span class="uti-icon">{{ fileEmoji(item.file) }}</span>
+          <div class="uti-info">
+            <div class="uti-name" v-text="item.file.name"></div>
+            <div class="uti-bar">
+              <div class="uti-bar-fill" :class="{ done: item.status === 'done', error: item.status === 'error' }" :style="{ width: item.progress + '%' }"></div>
+            </div>
+          </div>
+          <span class="uti-status" v-text="item.status === 'done' ? '✅' : item.status === 'error' ? '❌' : item.progress + '%'"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" @click="showUploadPopup = true">+</button>
   </div>
 </template>
 
 <script>
-import {
-  generateThumbnail,
-  blobDigest,
-  multipartUpload,
-  SIZE_LIMIT,
-} from "/assets/main.mjs";
+import { generateThumbnail, blobDigest, multipartUpload, SIZE_LIMIT } from "/assets/main.mjs";
 import Dialog from "./Dialog.vue";
 import Menu from "./Menu.vue";
-import MimeIcon from "./MimeIcon.vue";
 import UploadPopup from "./UploadPopup.vue";
+import FileIcon from "./FileIcon.vue";
+
+const CONCURRENCY = 3;
 
 export default {
   data: () => ({
@@ -224,37 +162,61 @@ export default {
     files: [],
     folders: [],
     clipboard: null,
-    focusedItem: null,
+    ctxItem: null,
     loading: false,
     order: null,
     search: "",
+    activeFilter: 'all',
     showContextMenu: false,
     showMenu: false,
     showUploadPopup: false,
-    uploadProgress: null,
-    uploadQueue: [],
+    batchMode: false,
+    uploadPanelOpen: true,
+    uploadItems: [],
+    uploadIdSeq: 0,
+    activeUploads: 0,
+    storageUsed: 3.7 * 1024 * 1024 * 1024,
+    storageTotal: 10 * 1024 * 1024 * 1024,
   }),
 
   computed: {
     currentTheme() {
       return document.documentElement.dataset.theme || 'light';
     },
-    filteredFiles() {
-      let files = this.files;
-      if (this.search) {
-        files = files.filter((file) =>
-          file.key.split("/").pop().includes(this.search)
-        );
-      }
-      return files;
+    storagePercent() {
+      return Math.round((this.storageUsed / this.storageTotal) * 100);
     },
-
+    menuItems() {
+      return [
+        { text: '名称 A-Z' },
+        { text: '大小 ↑' },
+        { text: '大小 ↓' },
+        { text: '粘贴' },
+      ];
+    },
     filteredFolders() {
-      let folders = this.folders;
-      if (this.search) {
-        folders = folders.filter((folder) => folder.includes(this.search));
-      }
-      return folders;
+      let list = this.folders;
+      if (this.search) list = list.filter(f => f.includes(this.search));
+      if (this.activeFilter !== 'all' && this.activeFilter !== 'folder') return [];
+      return list;
+    },
+    filteredFiles() {
+      let list = this.files;
+      if (this.search) list = list.filter(f => f.key.split('/').pop().includes(this.search));
+      if (this.order === 'size_asc') list = [...list].sort((a, b) => a.size - b.size);
+      else if (this.order === 'size_desc') list = [...list].sort((a, b) => b.size - a.size);
+      else list = [...list].sort((a, b) => a.key.localeCompare(b.key));
+      if (this.activeFilter === 'all') return list;
+      return list.filter(f => {
+        const ct = (f.httpMetadata?.contentType || '').toLowerCase();
+        const ext = f.key.split('.').pop().toLowerCase();
+        if (this.activeFilter === 'image') return ct.startsWith('image/') || /^(png|jpg|jpeg|gif|webp|svg|bmp|ico|avif)$/.test(ext);
+        if (this.activeFilter === 'video') return ct.startsWith('video/') || /^(mp4|avi|mkv|mov|wmv|flv|webm)$/.test(ext);
+        if (this.activeFilter === 'doc') return ct.startsWith('application/pdf') || ct.includes('document') || ct.includes('spreadsheet') || ct.includes('presentation') || /^(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|md)$/.test(ext);
+        if (this.activeFilter === 'archive') return ct.includes('zip') || ct.includes('rar') || ct.includes('gzip') || ct.includes('tar') || /^(zip|rar|7z|tar|gz|bz2)$/.test(ext);
+        if (this.activeFilter === 'audio') return ct.startsWith('audio/') || /^(mp3|wav|flac|aac|ogg|wma)$/.test(ext);
+        return true;
+      });
     },
   },
 
@@ -265,33 +227,69 @@ export default {
       html.dataset.theme = next;
       localStorage.setItem('drive-theme', next);
     },
+
+    formatDate(ts) {
+      try {
+        return new Date(ts).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+      } catch { return ts; }
+    },
+
+    formatSize(size) {
+      if (!size && size !== 0) return '—';
+      const units = ["B", "KB", "MB", "GB", "TB"];
+      let i = 0;
+      let s = size;
+      while (s >= 1024 && i < units.length - 1) { s /= 1024; i++; }
+      return `${s.toFixed(1)} ${units[i]}`;
+    },
+
+    fileEmoji(file) {
+      const type = file.type || '';
+      if (type.startsWith('image/')) return '🖼️';
+      if (type.startsWith('video/')) return '🎬';
+      if (type.startsWith('audio/')) return '🎵';
+      const ext = (file.name || '').split('.').pop().toLowerCase();
+      if (/^(zip|rar|7z|tar|gz|bz2)$/.test(ext)) return '📦';
+      if (/^(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|md)$/.test(ext)) return '📄';
+      return '📄';
+    },
+
+    getFileCategory(file) {
+      const ct = (file.httpMetadata?.contentType || '').toLowerCase();
+      const ext = file.key.split('.').pop().toLowerCase();
+      if (ct.startsWith('image/') || /^(png|jpg|jpeg|gif|webp|svg|bmp|ico|avif)$/.test(ext)) return 'image';
+      if (ct.startsWith('video/') || /^(mp4|avi|mkv|mov|wmv|flv|webm)$/.test(ext)) return 'video';
+      if (ct.startsWith('audio/') || /^(mp3|wav|flac|aac|ogg|wma)$/.test(ext)) return 'audio';
+      if (ct.includes('zip') || ct.includes('rar') || ct.includes('gzip') || ct.includes('tar') || /^(zip|rar|7z|tar|gz|bz2)$/.test(ext)) return 'archive';
+      if (ct.startsWith('application/pdf') || ct.includes('document') || ct.includes('spreadsheet') || ct.includes('presentation') || /^(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|md)$/.test(ext)) return 'doc';
+      return 'file';
+    },
+
+    openContextMenu(item) {
+      this.ctxItem = item;
+      this.showContextMenu = true;
+    },
+
     copyLink(link) {
       const url = new URL(link, window.location.origin);
       navigator.clipboard.writeText(url.toString());
     },
 
     async copyPaste(source, target) {
-      const uploadUrl = `/api/write/items/${target}`;
-      await axios.put(uploadUrl, "", {
+      await axios.put(`/api/write/items/${target}`, "", {
         headers: { "x-amz-copy-source": encodeURIComponent(source) },
       });
     },
 
     async createFolder() {
+      const name = window.prompt("请输入文件夹名称");
+      if (!name) return;
+      this.showUploadPopup = false;
       try {
-        const folderName = window.prompt("请输入文件夹名称");
-        if (!folderName) return;
-        this.showUploadPopup = false;
-        const uploadUrl = `/api/write/items/${this.cwd}${folderName}/_$folder$`;
-        await axios.put(uploadUrl, "");
+        await axios.put(`/api/write/items/${this.cwd}${name}/_$folder$`, "");
         this.fetchFiles();
-      } catch (error) {
-        fetch("/api/write/")
-          .then((value) => {
-            if (value.redirected) window.location.href = value.url;
-          })
-          .catch(() => {});
-        console.log(`Create folder failed`);
+      } catch {
+        fetch("/api/write/").then(r => { if (r.redirected) window.location.href = r.url; }).catch(() => {});
       }
     },
 
@@ -300,64 +298,32 @@ export default {
       this.folders = [];
       this.loading = true;
       fetch(`/api/children/${this.cwd}`)
-        .then((res) => res.json())
-        .then((files) => {
-          this.files = files.value;
-          if (this.order) {
-            this.files.sort((a, b) => {
-              if (this.order === "size") {
-                return b.size - a.size;
-              }
-            });
-          }
-          this.folders = files.folders;
+        .then(r => r.json())
+        .then(data => {
+          this.files = data.value || [];
+          this.folders = data.folders || [];
           this.loading = false;
-        });
-    },
-
-    formatSize(size) {
-      const units = ["B", "KB", "MB", "GB", "TB"];
-      let i = 0;
-      while (size >= 1024) {
-        size /= 1024;
-        i++;
-      }
-      return `${size.toFixed(1)} ${units[i]}`;
+        })
+        .catch(() => { this.loading = false; });
     },
 
     onDrop(ev) {
       let files;
       if (ev.dataTransfer.items) {
-        files = [...ev.dataTransfer.items]
-          .filter((item) => item.kind === "file")
-          .map((item) => item.getAsFile());
-      } else files = ev.dataTransfer.files;
+        files = [...ev.dataTransfer.items].filter(i => i.kind === "file").map(i => i.getAsFile());
+      } else {
+        files = ev.dataTransfer.files;
+      }
       this.uploadFiles(files);
     },
 
     onMenuClick(text) {
       switch (text) {
-        case "名称A-Z":
-          this.order = null;
-          break;
-        case "大小↑":
-          this.order = "大小↑";
-          break;
-        case "大小↓":
-          this.order = "大小↓";
-          break;
-        case "粘贴":
-          return this.pasteFile();
+        case '名称 A-Z': this.order = null; break;
+        case '大小 ↑': this.order = 'size_asc'; break;
+        case '大小 ↓': this.order = 'size_desc'; break;
+        case '粘贴': return this.pasteFile();
       }
-      this.files.sort((a, b) => {
-        if (this.order === "大小↑") {
-          return a.size - b.size;
-        } else if (this.order === "大小↓") {
-          return b.size - a.size;
-        } else {
-          return a.key.localeCompare(b.key);
-        }
-      });
     },
 
     onUploadClicked(fileElement) {
@@ -367,78 +333,79 @@ export default {
       fileElement.value = null;
     },
 
-    preview(filePath){
-      window.open(filePath);
-    },
+    preview(path) { window.open(path); },
 
     async pasteFile() {
       if (!this.clipboard) return;
-      let newName = window.prompt("Rename to:");
-      if (newName === null) return;
-      if (newName === "") newName = this.clipboard.split("/").pop();
-      await this.copyPaste(this.clipboard, `${this.cwd}${newName}`);
+      let name = window.prompt("重命名为:");
+      if (name === null) return;
+      if (name === "") name = this.clipboard.split("/").pop();
+      await this.copyPaste(this.clipboard, `${this.cwd}${name}`);
       this.fetchFiles();
     },
 
-    async processUploadQueue() {
-      if (!this.uploadQueue.length) {
-        this.fetchFiles();
-        this.uploadProgress = null;
-        return;
+    /* Concurrent Upload System */
+    uploadFiles(files) {
+      if (this.cwd && !this.cwd.endsWith("/")) this.cwd += "/";
+      for (const file of Array.from(files)) {
+        const id = ++this.uploadIdSeq;
+        this.uploadItems.push({ id, file, basedir: this.cwd, progress: 0, status: 'queued' });
       }
+      this.uploadPanelOpen = true;
+      this.processUploadQueue();
+    },
 
-      /** @type File **/
-      const { basedir, file } = this.uploadQueue.pop(0);
+    async processUploadQueue() {
+      const pending = this.uploadItems.filter(i => i.status === 'queued');
+      if (!pending.length) return;
+      const batch = pending.slice(0, CONCURRENCY - this.uploadItems.filter(i => i.status === 'uploading').length);
+      if (!batch.length) return;
+      this.activeUploads = this.uploadItems.filter(i => i.status === 'uploading' || i.status === 'queued').length;
+      await Promise.all(batch.map(item => this.uploadSingle(item)));
+      this.processUploadQueue();
+    },
+
+    async uploadSingle(item) {
+      item.status = 'uploading';
+      this.activeUploads = this.uploadItems.filter(i => i.status === 'uploading' || i.status === 'queued').length;
       let thumbnailDigest = null;
 
-      if (file.type.startsWith("image/") || file.type === "video/mp4") {
+      if (item.file.type.startsWith('image/') || item.file.type === 'video/mp4') {
         try {
-          const thumbnailBlob = await generateThumbnail(file);
-          const digestHex = await blobDigest(thumbnailBlob);
-
-          const thumbnailUploadUrl = `/api/write/items/_$flaredrive$/thumbnails/${digestHex}.png`;
-          try {
-            await axios.put(thumbnailUploadUrl, thumbnailBlob);
-            thumbnailDigest = digestHex;
-          } catch (error) {
-            fetch("/api/write/")
-              .then((value) => {
-                if (value.redirected) window.location.href = value.url;
-              })
-              .catch(() => {});
-            console.log(`Upload ${digestHex}.png failed`);
-          }
-        } catch (error) {
-          console.log(`Generate thumbnail failed`);
+          const thumb = await generateThumbnail(item.file);
+          const digest = await blobDigest(thumb);
+          await axios.put(`/api/write/items/_$flaredrive$/thumbnails/${digest}.png`, thumb);
+          thumbnailDigest = digest;
+        } catch (e) {
+          console.log('Thumbnail failed', e);
         }
       }
 
       try {
-        const uploadUrl = `/api/write/items/${basedir}${file.name}`;
+        const url = `/api/write/items/${item.basedir}${item.file.name}`;
         const headers = {};
-        const onUploadProgress = (progressEvent) => {
-          var percentCompleted =
-            (progressEvent.loaded * 100) / progressEvent.total;
-          this.uploadProgress = percentCompleted;
+        if (thumbnailDigest) headers['fd-thumbnail'] = thumbnailDigest;
+        const onProgress = (e) => {
+          item.progress = Math.round((e.loaded * 100) / e.total);
         };
-        if (thumbnailDigest) headers["fd-thumbnail"] = thumbnailDigest;
-        if (file.size >= SIZE_LIMIT) {
-          await multipartUpload(`${basedir}${file.name}`, file, {
-            headers,
-            onUploadProgress,
-          });
+        if (item.file.size >= SIZE_LIMIT) {
+          await multipartUpload(`${item.basedir}${item.file.name}`, item.file, { headers, onUploadProgress: onProgress });
         } else {
-          await axios.put(uploadUrl, file, { headers, onUploadProgress });
+          await axios.put(url, item.file, { headers, onUploadProgress: onProgress });
         }
-      } catch (error) {
-        fetch("/api/write/")
-          .then((value) => {
-            if (value.redirected) window.location.href = value.url;
-          })
-          .catch(() => {});
-        console.log(`Upload ${file.name} failed`, error);
+        item.progress = 100;
+        item.status = 'done';
+      } catch (err) {
+        item.status = 'error';
+        fetch("/api/write/").then(r => { if (r.redirected) window.location.href = r.url; }).catch(() => {});
       }
-      setTimeout(this.processUploadQueue);
+      this.activeUploads = this.uploadItems.filter(i => i.status === 'uploading' || i.status === 'queued').length;
+      if (this.activeUploads === 0) {
+        this.fetchFiles();
+        setTimeout(() => {
+          this.uploadItems = [];
+        }, 5000);
+      }
     },
 
     async removeFile(key) {
@@ -448,170 +415,68 @@ export default {
     },
 
     async renameFile(key) {
-      const newName = window.prompt("重命名为:");
-      if (!newName) return;
-      await this.copyPaste(key, `${this.cwd}${newName}`);
+      const name = window.prompt("重命名为:");
+      if (!name) return;
+      await this.copyPaste(key, `${this.cwd}${name}`);
       await axios.delete(`/api/write/items/${key}`);
       this.fetchFiles();
     },
 
     async moveFile(key) {
-      // 获取当前的目录结构
-      const currentPath = this.cwd; // 当前所在目录
-      const allFolders = [...this.folders]; // 所有可用目录
-      
-      // 如果不在根目录，添加返回上级目录选项
+      const currentPath = this.cwd;
+      let allFolders = [...this.folders];
       if (currentPath !== '') {
         const parentPath = currentPath.replace(/[^\/]+\/$/, '');
-        if (!allFolders.includes(parentPath) && parentPath !== '') {
-          allFolders.unshift(parentPath);
-        }
+        if (!allFolders.includes(parentPath) && parentPath !== '') allFolders.unshift(parentPath);
       }
-      
-      // 添加根目录选项
-      if (!allFolders.includes('')) {
-        allFolders.unshift('');
-      }
-      
-      // 构建选择列表
-      const folderOptions = allFolders.map(folder => {
-        const displayName = folder === '' ? '根目录' : 
-                          folder === currentPath ? '当前目录' :
-                          folder.replace(/.*\/(?!$)|\//g, '') + '/';
-        return {
-          display: displayName,
-          value: folder
-        };
-      });
-      
-      // 创建选择提示
-      const options = folderOptions.map((opt, index) => 
-        `${index + 1}. ${opt.display}`
-      ).join('\n');
-      
-      const promptText = `请选择目标目录(输入数字):\n${options}\n`;
-      const selection = window.prompt(promptText);
-      
-      if (!selection) return;
-      
-      const selectedIndex = parseInt(selection) - 1;
-      if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= folderOptions.length) {
-        alert('无效的选择');
-        return;
-      }
-      
-      const targetPath = folderOptions[selectedIndex].value;
-      
-      // 获取文件名
+      if (!allFolders.includes('')) allFolders.unshift('');
+      const opts = allFolders.map((f, i) => `${i+1}. ${f === '' ? '根目录' : f === currentPath ? '当前目录' : f.replace(/.*\/(?!$)|\//g, '') + '/'}`).join('\n');
+      const sel = window.prompt(`选择目标目录:\n${opts}\n`);
+      if (!sel) return;
+      const idx = parseInt(sel) - 1;
+      if (isNaN(idx) || idx < 0 || idx >= allFolders.length) return alert('无效选择');
+      const target = allFolders[idx];
       const fileName = key.split('/').pop();
-      // 如果是文件夹,需要移除_$folder$后缀
-      const finalFileName = fileName.endsWith('_$folder$') ? fileName.slice(0, -9) : fileName;
-      
-      // 修复：正确处理目标路径，避免双斜杠
-      const normalizedPath = targetPath === '' ? '' : (targetPath.endsWith('/') ? targetPath : targetPath + '/');
-      
+      const finalName = fileName.endsWith('_$folder$') ? fileName.slice(0, -9) : fileName;
+      const norm = target === '' ? '' : (target.endsWith('/') ? target : target + '/');
+
       try {
-        // 如果是目录（以_$folder$结尾），则需要移动整个目录内容
         if (key.endsWith('_$folder$')) {
-          // 获取源目录的基础路径（移除_$folder$后缀）
-          const sourceBasePath = key.slice(0, -9);
-          // 获取目标目录的基础路径，修复根目录的情况
-          const targetBasePath = normalizedPath + finalFileName + '/';
-          
-          // 递归获取所有子文件和子目录
-          const allItems = await this.getAllItems(sourceBasePath);
-          
-          // 显示进度提示
-          const totalItems = allItems.length;
-          let processedItems = 0;
-          
-          // 移动所有项目
-          for (const item of allItems) {
-            const relativePath = item.key.substring(sourceBasePath.length);
-            const newPath = targetBasePath + relativePath;
-            
-            try {
-              // 复制到新位置
-              await this.copyPaste(item.key, newPath);
-              // 删除原位置
-              await axios.delete(`/api/write/items/${item.key}`);
-              
-              // 更新进度
-              processedItems++;
-              this.uploadProgress = (processedItems / totalItems) * 100;
-            } catch (error) {
-              console.error(`移动 ${item.key} 失败:`, error);
-            }
+          const srcBase = key.slice(0, -9);
+          const tgtBase = norm + finalName + '/';
+          const all = await this.getAllItems(srcBase);
+          for (const item of all) {
+            const rel = item.key.substring(srcBase.length);
+            await this.copyPaste(item.key, tgtBase + rel);
+            await axios.delete(`/api/write/items/${item.key}`);
           }
-          
-          // 移动目录标记
-          const targetFolderPath = targetBasePath.slice(0, -1) + '_$folder$';
-          await this.copyPaste(key, targetFolderPath);
+          await this.copyPaste(key, tgtBase.slice(0, -1) + '_$folder$');
           await axios.delete(`/api/write/items/${key}`);
-          
-          // 清除进度
-          this.uploadProgress = null;
         } else {
-          // 单文件移动逻辑，修复根目录的情况
-          const targetFilePath = normalizedPath + finalFileName;
-          await this.copyPaste(key, targetFilePath);
+          await this.copyPaste(key, norm + finalName);
           await axios.delete(`/api/write/items/${key}`);
         }
-        
-        // 刷新文件列表
         this.fetchFiles();
-      } catch (error) {
-        console.error('移动失败:', error);
-        alert('移动失败,请检查目标路径是否正确');
+      } catch {
+        alert('移动失败');
       }
     },
 
-    // 新增：递归获取目录下所有文件和子目录
     async getAllItems(prefix) {
       const items = [];
       let marker = null;
-      
       do {
         const url = new URL(`/api/children/${prefix}`, window.location.origin);
-        if (marker) {
-          url.searchParams.set('marker', marker);
+        if (marker) url.searchParams.set('marker', marker);
+        const data = await fetch(url).then(r => r.json());
+        items.push(...(data.value || []));
+        for (const folder of (data.folders || [])) {
+          items.push({ key: folder + '_$folder$', size: 0, uploaded: new Date().toISOString() });
+          items.push(...await this.getAllItems(folder));
         }
-        
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        // 添加文件
-        items.push(...data.value);
-        
-        // 处理子目录
-        for (const folder of data.folders) {
-          // 添加目录标记
-          items.push({
-            key: folder + '_$folder$',
-            size: 0,
-            uploaded: new Date().toISOString(),
-          });
-          
-          // 递归获取子目录内容
-          const subItems = await this.getAllItems(folder);
-          items.push(...subItems);
-        }
-        
         marker = data.marker;
       } while (marker);
-      
       return items;
-    },
-
-    uploadFiles(files) {
-      if (this.cwd && !this.cwd.endsWith("/")) this.cwd += "/";
-
-      const uploadTasks = Array.from(files).map((file) => ({
-        basedir: this.cwd,
-        file,
-      }));
-      this.uploadQueue.push(...uploadTasks);
-      setTimeout(() => this.processUploadQueue());
     },
   },
 
@@ -621,14 +486,10 @@ export default {
         this.fetchFiles();
         const url = new URL(window.location);
         if ((url.searchParams.get("p") || "") !== this.cwd) {
-          this.cwd
-            ? url.searchParams.set("p", this.cwd)
-            : url.searchParams.delete("p");
+          this.cwd ? url.searchParams.set("p", this.cwd) : url.searchParams.delete("p");
           window.history.pushState(null, "", url.toString());
         }
-        document.title = `${
-          this.cwd.replace(/.*\/(?!$)|\//g, "") || "/"
-        } - 文件库`;
+        document.title = `${this.cwd.replace(/.*\/(?!$)|\//g, "") || "/"} - 文件库`;
       },
       immediate: true,
     },
@@ -636,93 +497,171 @@ export default {
 
   created() {
     const saved = localStorage.getItem('drive-theme');
-    if (saved) {
-      document.documentElement.dataset.theme = saved;
-    } else {
-      document.documentElement.dataset.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    window.addEventListener("popstate", (ev) => {
-      const searchParams = new URL(window.location).searchParams;
-      if (searchParams.get("p") !== this.cwd)
-        this.cwd = searchParams.get("p") || "";
+    if (saved) document.documentElement.dataset.theme = saved;
+    else document.documentElement.dataset.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    window.addEventListener("popstate", () => {
+      const p = new URL(window.location).searchParams.get("p") || "";
+      if (p !== this.cwd) this.cwd = p;
     });
   },
 
-  components: {
-    Dialog,
-    Menu,
-    MimeIcon,
-    UploadPopup,
-  },
+  components: { Dialog, Menu, UploadPopup, FileIcon },
 };
 </script>
 
 <style>
-.main {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
+.main { height: 100%; display: flex; flex-direction: column; }
 
-.app-bar {
-  position: sticky;
-  top: 0;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 10;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  background: light-dark(
-    color-mix(in oklch, #f8f7ff 80%, transparent),
-    color-mix(in oklch, #0d0b1a 70%, transparent)
-  );
+/* ===== Title Bar ===== */
+.title-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 8px; flex-shrink: 0;
+}
+.title-left { display: flex; align-items: baseline; gap: 10px; }
+.title-text {
+  font-size: 1.35rem; font-weight: 700; margin: 0;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.title-domain { font-size: 0.78rem; color: var(--text-tertiary); }
+.title-right { display: flex; gap: 4px; }
+.title-btn {
+  width: 34px; height: 34px; border-radius: 10px; border: none;
+  background: var(--bg-secondary); cursor: pointer; font-size: 0.95rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; color: var(--text-secondary);
+}
+.title-btn:hover { background: var(--accent-subtle); color: var(--accent); }
+
+/* ===== Storage ===== */
+.storage-bar-wrap { padding: 6px 20px 10px; flex-shrink: 0; }
+.storage-info { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 4px; }
+.storage-bar { height: 5px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; }
+.storage-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #a855f7); border-radius: 3px; transition: width 0.5s; }
+
+/* ===== Toolbar ===== */
+.toolbar {
+  display: flex; align-items: center; gap: 10px; padding: 6px 16px; flex-shrink: 0;
   border-bottom: 1px solid var(--border);
 }
-
-.menu-button {
-  display: flex;
-  position: relative;
-  flex-shrink: 0;
+.toolbar-search {
+  flex: 0 1 280px; padding: 7px 14px; border: 1px solid var(--border);
+  border-radius: 10px; background: var(--bg-secondary); font-size: 0.85rem;
+  color: var(--text-primary); outline: none; transition: border-color 0.2s;
 }
-
-.menu-button > button {
-  width: 36px;
-  height: 36px;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, transform 0.2s;
-  color: var(--text-secondary);
+.toolbar-search:focus { border-color: var(--accent); background: var(--bg-primary); }
+.toolbar-actions { display: flex; gap: 4px; margin-left: auto; }
+.tb-btn {
+  padding: 6px 12px; border-radius: 8px; border: none; background: var(--bg-secondary);
+  cursor: pointer; font-size: 0.82rem; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 4px; white-space: nowrap;
+  transition: all 0.15s;
 }
+.tb-btn:hover { background: var(--accent-subtle); color: var(--accent); }
+.tb-btn.primary { background: linear-gradient(135deg, var(--accent), #a855f7); color: #fff; }
 
-.menu-button > button:hover {
-  background: var(--accent-subtle);
-  color: var(--text-primary);
-  transform: scale(1.05);
+/* ===== Filter Tabs ===== */
+.filter-tabs {
+  display: flex; gap: 2px; padding: 8px 16px 4px; flex-shrink: 0;
+  overflow-x: auto; scrollbar-width: none;
 }
+.filter-tabs::-webkit-scrollbar { display: none; }
+.ftab {
+  padding: 5px 14px; border-radius: 20px; border: none; background: transparent;
+  cursor: pointer; font-size: 0.8rem; color: var(--text-tertiary); white-space: nowrap;
+  transition: all 0.15s;
+}
+.ftab:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.ftab.active { background: var(--accent); color: #fff; }
 
-.app-title {
-  font-size: 1rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--text-primary), var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  flex-shrink: 0;
-  white-space: nowrap;
+/* ===== Table Header ===== */
+.table-header {
+  display: flex; align-items: center; padding: 6px 16px;
+  font-size: 0.72rem; color: var(--text-tertiary); text-transform: uppercase;
+  letter-spacing: 0.04em; border-bottom: 1px solid var(--border);
+  background: color-mix(in oklch, var(--bg-secondary) 50%, transparent); flex-shrink: 0;
 }
+.th-icon { flex: 0 0 40px; }
+.th-name { flex: 1; }
+.th-date { flex: 0 0 140px; text-align: right; display: none; }
+.th-size { flex: 0 0 90px; text-align: right; }
+.th-more { flex: 0 0 36px; }
 
-.toggle-theme {
-  font-size: 1.1rem;
-  line-height: 1;
-}
+@media (min-width: 640px) { .th-date { display: block; } }
 
-.menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
+/* ===== Table Body ===== */
+.table-body { flex: 1; overflow-y: auto; padding: 2px 8px; }
+.table-row {
+  display: flex; align-items: center; padding: 6px 8px; border-radius: 8px;
+  transition: background 0.15s; cursor: pointer;
 }
+.table-row:hover { background: var(--accent-subtle); }
+
+.td-icon { flex: 0 0 40px; display: flex; justify-content: center; }
+.td-name { flex: 1; min-width: 0; }
+.td-date { flex: 0 0 140px; text-align: right; font-size: 0.8rem; color: var(--text-tertiary); display: none; }
+.td-size { flex: 0 0 90px; text-align: right; font-size: 0.8rem; color: var(--text-tertiary); }
+.td-more { flex: 0 0 36px; display: flex; justify-content: center; }
+
+@media (min-width: 640px) { .td-date { display: block; } }
+
+.file-label { font-weight: 500; font-size: 0.88rem; }
+.row-more {
+  width: 28px; height: 28px; border-radius: 50%; border: none; background: transparent;
+  cursor: pointer; color: var(--text-tertiary); opacity: 0; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.table-row:hover .row-more { opacity: 1; }
+.row-more:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+.table-loading, .table-empty { text-align: center; padding: 32px; color: var(--text-tertiary); font-size: 0.88rem; }
+
+/* ===== Context Menu ===== */
+.ctx-filename { padding: 12px 16px; font-size: 0.82rem; color: var(--text-secondary); word-break: break-all; border-bottom: 1px solid var(--border); }
+.ctx-list { padding: 4px; }
+.ctx-list li button, .ctx-list li a {
+  display: block; width: 100%; padding: 8px 14px; text-align: left; border-radius: 6px;
+  transition: all 0.15s; font-size: 0.85rem; color: var(--text-primary); text-decoration: none;
+}
+.ctx-list li button:hover, .ctx-list li a:hover { background: var(--accent-subtle); color: var(--accent); }
+.ctx-list li button.danger { color: var(--text-danger); }
+.ctx-list li button.danger:hover { background: color-mix(in oklch, var(--text-danger) 10%, transparent); }
+
+/* ===== Upload Tab ===== */
+.upload-tab {
+  border-top: 1px solid var(--border); background: color-mix(in oklch, var(--bg-secondary) 60%, transparent);
+  backdrop-filter: blur(12px); flex-shrink: 0;
+}
+.utab-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px; cursor: pointer; user-select: none; transition: background 0.15s;
+}
+.utab-header:hover { background: var(--accent-subtle); }
+.utab-left { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--text-secondary); }
+.utab-badge { background: var(--accent); color: #fff; font-size: 0.68rem; padding: 1px 7px; border-radius: 10px; font-weight: 600; }
+.utab-arrow { font-size: 0.75rem; color: var(--text-tertiary); transition: transform 0.2s; }
+.utab-arrow.open { transform: rotate(180deg); }
+.utab-body { padding: 0 20px 10px; display: flex; flex-direction: column; gap: 6px; }
+.utab-item { display: flex; align-items: center; gap: 10px; }
+.uti-icon { font-size: 0.95rem; width: 24px; text-align: center; flex-shrink: 0; }
+.uti-info { flex: 1; min-width: 0; }
+.uti-name { font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.uti-bar { height: 4px; background: var(--bg-tertiary); border-radius: 2px; margin-top: 3px; overflow: hidden; }
+.uti-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #a855f7); border-radius: 2px; transition: width 0.3s; }
+.uti-bar-fill.done { background: #22c55e; }
+.uti-bar-fill.error { background: var(--text-danger); }
+.uti-status { font-size: 0.72rem; color: var(--text-tertiary); flex-shrink: 0; min-width: 36px; text-align: right; }
+
+/* ===== FAB ===== */
+.fab {
+  position: fixed; bottom: 20px; right: 20px;
+  width: 50px; height: 50px; border-radius: 50%; border: none;
+  background: linear-gradient(135deg, var(--accent), #a855f7); color: #fff;
+  font-size: 1.5rem; cursor: pointer; z-index: 5;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s var(--ease-out);
+}
+.fab:hover { transform: translateY(-3px); box-shadow: 0 6px 28px rgba(124,91,240,0.35); }
+.fab:active { transform: scale(0.95); }
 </style>

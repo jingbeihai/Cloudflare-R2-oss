@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文件库 · 设计稿 v2</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f0eeff;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+h2 { font-size: 1.3rem; color: #333; margin-bottom: 8px; }
+h2 span { color: #7c5bf0; }
+
+/* ===== Desktop Frame ===== */
+.desktop {
+  width: 960px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Title Bar */
+.d-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 1px solid #eee;
+}
+.d-title-left { display: flex; align-items: baseline; gap: 12px; }
+.d-title-left h1 { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #1a1a2e, #7c5bf0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.d-title-left .domain { font-size: 0.8rem; color: #aaa; }
+.d-title-right { display: flex; gap: 8px; }
+.d-title-right button {
+  width: 36px; height: 36px; border-radius: 10px; border: none; background: #f5f3ff;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; transition: background 0.2s;
+}
+.d-title-right button:hover { background: #edeaff; }
+
+/* Main Layout: sidebar + content */
+.d-body { display: flex; min-height: 520px; }
+
+/* Sidebar */
+.d-sidebar {
+  width: 200px;
+  background: #fafaff;
+  border-right: 1px solid #eee;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+}
+.d-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  font-size: 0.88rem;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+  background: none;
+  text-align: left;
+}
+.d-sidebar-item:hover { background: #f0eeff; color: #7c5bf0; }
+.d-sidebar-item.active { background: #edeaff; color: #7c5bf0; font-weight: 600; }
+.d-sidebar-item .icon { font-size: 1.1rem; width: 24px; text-align: center; }
+
+.d-sidebar-spacer { flex: 1; }
+
+/* Storage in sidebar */
+.sidebar-storage {
+  padding: 12px 20px;
+  border-top: 1px solid #eee;
+}
+.sidebar-storage .label { font-size: 0.75rem; color: #aaa; margin-bottom: 6px; }
+.sidebar-storage .bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+.sidebar-storage .bar div {
+  height: 100%; width: 37%;
+  background: linear-gradient(90deg, #7c5bf0, #a855f7);
+  border-radius: 3px;
+}
+.sidebar-storage .nums { font-size: 0.7rem; color: #999; margin-top: 4px; display: flex; justify-content: space-between; }
+
+/* Content */
+.d-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Search + Actions */
+.d-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0eeff;
+}
+.d-toolbar input {
+  flex: 1; max-width: 320px;
+  padding: 8px 14px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fafaff;
+  font-size: 0.85rem;
+  outline: none;
+}
+.d-toolbar input:focus { border-color: #7c5bf0; background: #fff; }
+
+.d-toolbar-btns { display: flex; gap: 6px; }
+.d-toolbar-btns button {
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #f5f3ff;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.d-toolbar-btns button:hover { background: #edeaff; color: #7c5bf0; }
+.d-toolbar-btns button.primary { background: linear-gradient(135deg, #7c5bf0, #a855f7); color: #fff; }
+
+/* File Table */
+.d-table {
+  flex: 1;
+  overflow-y: auto;
+}
+.d-table-header {
+  display: flex;
+  padding: 8px 20px;
+  font-size: 0.75rem;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #f0eeff;
+  background: #fafaff;
+}
+.d-table-header > div:nth-child(1) { flex: 0 0 40px; } /* icon */
+.d-table-header > div:nth-child(2) { flex: 1; }        /* name */
+.d-table-header > div:nth-child(3) { flex: 0 0 140px; text-align: right; } /* date */
+.d-table-header > div:nth-child(4) { flex: 0 0 100px; text-align: right; } /* size */
+.d-table-header > div:nth-child(5) { flex: 0 0 40px; }  /* more */
+
+.d-table-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.d-table-row:hover { background: #f8f7ff; }
+.d-table-row > div:nth-child(1) { flex: 0 0 40px; display: flex; justify-content: center; }
+.d-table-row > div:nth-child(2) { flex: 1; min-width: 0; }
+.d-table-row > div:nth-child(3) { flex: 0 0 140px; text-align: right; font-size: 0.8rem; color: #999; }
+.d-table-row > div:nth-child(4) { flex: 0 0 100px; text-align: right; font-size: 0.8rem; color: #999; }
+.d-table-row > div:nth-child(5) { flex: 0 0 40px; display: flex; justify-content: center; }
+
+.file-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+.file-icon.folder { background: #edeaff; }
+.file-icon.image { background: #e6f7ed; }
+.file-icon.video { background: #fde8e8; }
+.file-icon.doc { background: #e6effd; }
+.file-icon.zip { background: #fef3cd; }
+
+.file-name { font-weight: 500; font-size: 0.88rem; }
+.file-name .ext { color: #aaa; }
+
+.d-table-more {
+  width: 28px; height: 28px; border-radius: 50%; border: none;
+  background: transparent; cursor: pointer; opacity: 0;
+  color: #ccc; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.d-table-row:hover .d-table-more { opacity: 1; }
+.d-table-more:hover { background: #f0eeff; color: #555; }
+
+/* ===== Bottom Upload Tab ===== */
+.d-upload-tab {
+  border-top: 1px solid #eee;
+  background: #fafaff;
+}
+.d-upload-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+.d-upload-tab-header:hover { background: #f5f3ff; }
+.d-upload-tab-header .left { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #555; }
+.d-upload-tab-header .left .badge {
+  background: #7c5bf0; color: #fff; font-size: 0.7rem;
+  padding: 1px 8px; border-radius: 10px; font-weight: 600;
+}
+.d-upload-tab-header .arrow { font-size: 0.8rem; color: #aaa; transition: transform 0.2s; }
+.d-upload-tab-header .arrow.open { transform: rotate(180deg); }
+
+.d-upload-tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 20px 12px;
+}
+.d-upload-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.d-upload-item-icon { font-size: 1rem; width: 24px; text-align: center; flex-shrink: 0; }
+.d-upload-item-info { flex: 1; min-width: 0; }
+.d-upload-item-name { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.d-upload-item-bar { height: 4px; background: #eee; border-radius: 2px; margin-top: 3px; overflow: hidden; }
+.d-upload-item-bar > div {
+  height: 100%;
+  width: var(--p, 0%);
+  background: linear-gradient(90deg, #7c5bf0, #a855f7);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+.d-upload-item-bar > div.done { background: #22c55e; }
+.d-upload-item-status { font-size: 0.72rem; color: #999; flex-shrink: 0; min-width: 40px; text-align: right; }
+
+/* ===== Mobile Frame (reference) ===== */
+.mobile-row {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+.mobile {
+  width: 340px;
+  background: #fff;
+  border-radius: 28px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile Title */
+.m-title-bar {
+  padding: 16px 18px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.m-title-left h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, #1a1a2e, #7c5bf0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.m-title-left p { font-size: 0.72rem; color: #bbb; margin-top: 1px; }
+.m-title-right { display: flex; gap: 4px; }
+.m-title-right button {
+  width: 32px; height: 32px; border-radius: 50%; border: none; background: #f5f3ff;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+}
+
+/* Mobile Storage */
+.m-storage { padding: 4px 18px 12px; }
+.m-storage .bar { height: 5px; background: #eee; border-radius: 3px; overflow: hidden; }
+.m-storage .bar div { height: 100%; width: 37%; background: linear-gradient(90deg, #7c5bf0, #a855f7); border-radius: 3px; }
+.m-storage .nums { display: flex; justify-content: space-between; font-size: 0.68rem; color: #aaa; margin-top: 3px; }
+
+/* Mobile File List */
+.m-list { padding: 4px 10px 16px; display: flex; flex-direction: column; gap: 1px; }
+.m-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px; border-radius: 10px;
+  transition: background 0.15s; cursor: pointer;
+}
+.m-item:hover { background: #f8f7ff; }
+.m-item .icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+.m-item .icon.folder { background: #edeaff; }
+.m-item .info { flex: 1; min-width: 0; }
+.m-item .info .name { font-size: 0.84rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-item .info .meta { font-size: 0.7rem; color: #aaa; }
+.m-item .more { opacity: 0; width: 24px; height: 24px; border-radius: 50%; border: none; background: transparent; cursor: pointer; color: #ccc; display: flex; align-items: center; justify-content: center; }
+.m-item:hover .more { opacity: 1; }
+
+/* Mobile Bottom Upload Tab */
+.m-upload-tab {
+  border-top: 1px solid #eee;
+  background: #fafaff;
+}
+.m-upload-tab-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; cursor: pointer; font-size: 0.82rem; color: #555;
+}
+.m-upload-tab-header .left { display: flex; align-items: center; gap: 6px; }
+.m-upload-tab-header .badge { background: #7c5bf0; color: #fff; font-size: 0.65rem; padding: 1px 6px; border-radius: 8px; }
+
+.m-upload-tab-body { padding: 0 16px 10px; display: flex; flex-direction: column; gap: 6px; }
+.m-upload-item { display: flex; align-items: center; gap: 8px; }
+.m-upload-item .icon { font-size: 0.9rem; width: 20px; text-align: center; }
+.m-upload-item .info { flex: 1; min-width: 0; }
+.m-upload-item .info .name { font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-upload-item .info .bar { height: 3px; background: #eee; border-radius: 2px; margin-top: 3px; overflow: hidden; }
+.m-upload-item .info .bar div { height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, #7c5bf0, #a855f7); border-radius: 2px; }
+.m-upload-item .status { font-size: 0.68rem; color: #aaa; min-width: 34px; text-align: right; }
+
+.label { text-align: center; font-size: 0.85rem; color: #999; margin-top: 8px; }
+.label strong { color: #7c5bf0; }
+</style>
+</head>
+<body>
+  <h2>📁 文件库 · 设计稿 <span>v2</span></h2>
+
+  <!-- Desktop Version -->
+  <div class="desktop">
+    <!-- Title Bar -->
+    <div class="d-title-bar">
+      <div class="d-title-left">
+        <h1>📁 文件库</h1>
+        <span class="domain">drive.7988798.xyz</span>
+      </div>
+      <div class="d-title-right">
+        <button>🌓</button>
+        <button>⚙️</button>
+        <button>👤</button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="d-body">
+      <!-- Sidebar -->
+      <div class="d-sidebar">
+        <button class="d-sidebar-item active"><span class="icon">🗂️</span> 全部文件</button>
+        <button class="d-sidebar-item"><span class="icon">🖼️</span> 图片</button>
+        <button class="d-sidebar-item"><span class="icon">🎬</span> 视频</button>
+        <button class="d-sidebar-item"><span class="icon">📄</span> 文档</button>
+        <button class="d-sidebar-item"><span class="icon">📦</span> 压缩包</button>
+        <button class="d-sidebar-item"><span class="icon">🎵</span> 音频</button>
+        <div class="d-sidebar-spacer"></div>
+        <div class="sidebar-storage">
+          <div class="label">存储空间</div>
+          <div class="bar"><div></div></div>
+          <div class="nums"><span>已用 3.7 GB</span><span>总计 10 GB</span></div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="d-content">
+        <!-- Toolbar -->
+        <div class="d-toolbar">
+          <input type="text" placeholder="🔍 搜索文件..." />
+          <div class="d-toolbar-btns">
+            <button class="primary">📤 上传</button>
+            <button>📁 新建文件夹</button>
+            <button>🔄 刷新</button>
+            <button>📋 批量选择</button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="d-table">
+          <div class="d-table-header">
+            <div></div>
+            <div>文件名</div>
+            <div>修改日期</div>
+            <div>大小</div>
+            <div></div>
+          </div>
+          <div class="d-table-row">
+            <div><span class="file-icon folder">📁</span></div>
+            <div><span class="file-name">我的文档</span></div>
+            <div>2026-06-19 15:30</div>
+            <div>—</div>
+            <div><button class="d-table-more">⋯</button></div>
+          </div>
+          <div class="d-table-row">
+            <div><span class="file-icon image">🖼️</span></div>
+            <div><span class="file-name">2025-旅行照片集</span></div>
+            <div>2026-06-18 09:15</div>
+            <div>234 MB</div>
+            <div><button class="d-table-more">⋯</button></div>
+          </div>
+          <div class="d-table-row">
+            <div><span class="file-icon video">🎬</span></div>
+            <div><span class="file-name">会议记录<span class="ext">.mp4</span></span></div>
+            <div>2026-06-15 14:20</div>
+            <div>1.2 GB</div>
+            <div><button class="d-table-more">⋯</button></div>
+          </div>
+          <div class="d-table-row">
+            <div><span class="file-icon doc">📄</span></div>
+            <div><span class="file-name">项目报告-最终版<span class="ext">.pdf</span></span></div>
+            <div>2026-06-10 11:00</div>
+            <div>2.4 MB</div>
+            <div><button class="d-table-more">⋯</button></div>
+          </div>
+          <div class="d-table-row">
+            <div><span class="file-icon zip">📦</span></div>
+            <div><span class="file-name">backup-2026-06<span class="ext">.zip</span></span></div>
+            <div>2026-06-05 22:00</div>
+            <div>856 MB</div>
+            <div><button class="d-table-more">⋯</button></div>
+          </div>
+        </div>
+
+        <!-- Bottom Upload Tab -->
+        <div class="d-upload-tab">
+          <div class="d-upload-tab-header">
+            <div class="left">
+              📤 上传进度 <span class="badge">3</span>
+            </div>
+            <span class="arrow">▾</span>
+          </div>
+          <div class="d-upload-tab-body">
+            <div class="d-upload-item">
+              <span class="d-upload-item-icon">🖼️</span>
+              <div class="d-upload-item-info">
+                <div class="d-upload-item-name">风景照-photo-01.jpg</div>
+                <div class="d-upload-item-bar"><div style="--p: 76%"></div></div>
+              </div>
+              <span class="d-upload-item-status">76%</span>
+            </div>
+            <div class="d-upload-item">
+              <span class="d-upload-item-icon">📄</span>
+              <div class="d-upload-item-info">
+                <div class="d-upload-item-name">项目文档-final.pdf</div>
+                <div class="d-upload-item-bar"><div style="--p: 42%"></div></div>
+              </div>
+              <span class="d-upload-item-status">42%</span>
+            </div>
+            <div class="d-upload-item">
+              <span class="d-upload-item-icon">📦</span>
+              <div class="d-upload-item-info">
+                <div class="d-upload-item-name">large-backup-2026.zip</div>
+                <div class="d-upload-item-bar"><div class="done" style="--p: 100%"></div></div>
+              </div>
+              <span class="d-upload-item-status">✅ 完成</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="label">💡 电脑版：左侧分类侧栏 + 容量条 + 表格列表 + 底部上传进度 Tab</p>
+
+  <!-- Mobile Version -->
+  <div class="mobile-row">
+    <div class="mobile">
+      <div class="m-title-bar">
+        <div class="m-title-left">
+          <h1>文件库</h1>
+          <p>drive.7988798.xyz</p>
+        </div>
+        <div class="m-title-right">
+          <button>🌓</button>
+          <button>⚙️</button>
+        </div>
+      </div>
+      <div class="m-storage">
+        <div class="bar"><div></div></div>
+        <div class="nums"><span>已用 3.7 GB</span><span>37% · 10 GB</span></div>
+      </div>
+      <div class="m-list">
+        <div class="m-item">
+          <span class="icon folder">📁</span>
+          <div class="info"><div class="name">我的文档</div><div class="meta">15 个文件</div></div>
+          <button class="more">⋯</button>
+        </div>
+        <div class="m-item">
+          <span class="icon" style="background:#e6f7ed;">🖼️</span>
+          <div class="info"><div class="name">2025-旅行照片</div><div class="meta">2026-06-18 · 234 MB</div></div>
+          <button class="more">⋯</button>
+        </div>
+        <div class="m-item">
+          <span class="icon" style="background:#fde8e8;">🎬</span>
+          <div class="info"><div class="name">会议记录.mp4</div><div class="meta">2026-06-15 · 1.2 GB</div></div>
+          <button class="more">⋯</button>
+        </div>
+        <div class="m-item">
+          <span class="icon" style="background:#e6effd;">📄</span>
+          <div class="info"><div class="name">项目报告-最终版.pdf</div><div class="meta">2026-06-10 · 2.4 MB</div></div>
+          <button class="more">⋯</button>
+        </div>
+        <div class="m-item">
+          <span class="icon" style="background:#fef3cd;">📦</span>
+          <div class="info"><div class="name">backup-2026-06.zip</div><div class="meta">2026-06-05 · 856 MB</div></div>
+          <button class="more">⋯</button>
+        </div>
+      </div>
+      <!-- Mobile Upload Tab -->
+      <div class="m-upload-tab">
+        <div class="m-upload-tab-header">
+          <div class="left">📤 上传进度 <span class="badge">3</span></div>
+          <span>▾</span>
+        </div>
+        <div class="m-upload-tab-body">
+          <div class="m-upload-item">
+            <span class="icon">🖼️</span>
+            <div class="info"><div class="name">风景照-photo-01.jpg</div><div class="bar"><div style="--p:76%"></div></div></div>
+            <span class="status">76%</span>
+          </div>
+          <div class="m-upload-item">
+            <span class="icon">📄</span>
+            <div class="info"><div class="name">项目文档-final.pdf</div><div class="bar"><div style="--p:42%"></div></div></div>
+            <span class="status">42%</span>
+          </div>
+          <div class="m-upload-item">
+            <span class="icon">📦</span>
+            <div class="info"><div class="name">large-backup-2026.zip</div><div class="bar"><div style="--p:100%; background:#22c55e; border-radius:2px; width:100%; height:100%;"></div></div></div>
+            <span class="status">✅</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="label">💡 手机版：搜索 + 分类过滤 + 上传进度折叠在底部 Tab</p>
+</body>
+</html>
