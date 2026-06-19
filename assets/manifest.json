@@ -1,6 +1,9 @@
 {
-  "name": "FlareDrive",
-  "theme_color": "#f38020",
+  "name": "文件库",
+  "short_name": "文件库",
+  "description": "个人云存储 · 极速 · 安全",
+  "theme_color": "#7c5bf0",
+  "background_color": "#0d0b1a",
   "display": "standalone",
   "start_url": "/",
   "icons": [

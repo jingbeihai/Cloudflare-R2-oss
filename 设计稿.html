@@ -3,442 +3,401 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>文件库 · 设计稿 v2</title>
+<title>文件库 · 设计稿 v3</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f0eeff;
+  background: linear-gradient(135deg, #f0eeff 0%, #f8f7ff 100%);
   padding: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 32px;
 }
-
 h2 { font-size: 1.3rem; color: #333; margin-bottom: 8px; }
-h2 span { color: #7c5bf0; }
+h2 span { background: linear-gradient(135deg, #1a1a2e, #7c5bf0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.desc { text-align: center; font-size: 0.85rem; color: #888; max-width: 600px; line-height: 1.6; }
 
 /* ===== Desktop Frame ===== */
 .desktop {
-  width: 960px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  width: 1000px;
+  background: color-mix(in oklch, white 72%, transparent);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(124, 91, 240, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: 1px solid rgba(255,255,255,0.5);
 }
 
-/* Title Bar */
-.d-title-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 28px;
-  border-bottom: 1px solid #eee;
-}
-.d-title-left { display: flex; align-items: baseline; gap: 12px; }
-.d-title-left h1 { font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #1a1a2e, #7c5bf0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.d-title-left .domain { font-size: 0.8rem; color: #aaa; }
-.d-title-right { display: flex; gap: 8px; }
-.d-title-right button {
-  width: 36px; height: 36px; border-radius: 10px; border: none; background: #f5f3ff;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; transition: background 0.2s;
-}
-.d-title-right button:hover { background: #edeaff; }
-
-/* Main Layout: sidebar + content */
 .d-body { display: flex; min-height: 520px; }
 
-/* Sidebar */
+/* ===== Sidebar ===== */
 .d-sidebar {
-  width: 200px;
-  background: #fafaff;
-  border-right: 1px solid #eee;
-  padding: 16px 0;
+  width: 220px;
+  background: color-mix(in oklch, #f0eeff 60%, transparent);
+  border-right: 1px solid color-mix(in oklch, #7c5bf0 10%, #e0e0e0);
+  padding: 0;
   display: flex;
   flex-direction: column;
 }
-.d-sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  font-size: 0.88rem;
-  color: #555;
-  cursor: pointer;
-  transition: all 0.15s;
-  border: none;
-  background: none;
-  text-align: left;
+.d-sidebar-brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 16px 14px; border-bottom: 1px solid color-mix(in oklch, #7c5bf0 10%, #e0e0e0);
 }
-.d-sidebar-item:hover { background: #f0eeff; color: #7c5bf0; }
-.d-sidebar-item.active { background: #edeaff; color: #7c5bf0; font-weight: 600; }
-.d-sidebar-item .icon { font-size: 1.1rem; width: 24px; text-align: center; }
+.d-sidebar-brand .icon { font-size: 1.6rem; }
+.d-sidebar-brand .title { font-size: 1.05rem; font-weight: 700; background: linear-gradient(135deg, #1a1a2e, #7c5bf0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.d-sidebar-brand .domain { font-size: 0.65rem; color: #aaa; display: block; margin-top: 1px; }
+
+.d-sidebar-nav { flex: 1; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.d-sidebar-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  border-radius: 8px; font-size: 0.85rem; color: #555;
+  cursor: pointer; transition: all 0.15s; border: none; background: none; text-align: left;
+}
+.d-sidebar-item:hover { background: color-mix(in oklch, #7c5bf0 10%, transparent); color: #7c5bf0; }
+.d-sidebar-item.active { background: #7c5bf0; color: #fff; font-weight: 600; }
+.d-sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
 
 .d-sidebar-spacer { flex: 1; }
 
-/* Storage in sidebar */
-.sidebar-storage {
-  padding: 12px 20px;
-  border-top: 1px solid #eee;
+.d-sidebar-storage {
+  padding: 14px 16px; border-top: 1px solid color-mix(in oklch, #7c5bf0 10%, #e0e0e0);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
-.sidebar-storage .label { font-size: 0.75rem; color: #aaa; margin-bottom: 6px; }
-.sidebar-storage .bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
-.sidebar-storage .bar div {
-  height: 100%; width: 37%;
-  background: linear-gradient(90deg, #7c5bf0, #a855f7);
-  border-radius: 3px;
-}
-.sidebar-storage .nums { font-size: 0.7rem; color: #999; margin-top: 4px; display: flex; justify-content: space-between; }
+.d-storage-canvas { width: 64px; height: 64px; }
+.d-storage-info { display: flex; gap: 4px; font-size: 0.75rem; }
+.d-storage-info .used { color: #1a1a2e; font-weight: 600; }
+.d-storage-info .total { color: #aaa; }
+.d-storage-bar { width: 100%; height: 4px; background: #e8e5f8; border-radius: 3px; overflow: hidden; }
+.d-storage-bar div { height: 100%; width: 37%; background: linear-gradient(90deg, #7c5bf0, #a855f7); border-radius: 3px; transition: width 0.5s; }
 
-/* Content */
+.d-sidebar-footer {
+  display: flex; gap: 2px; padding: 8px 12px; border-top: 1px solid color-mix(in oklch, #7c5bf0 10%, #e0e0e0); justify-content: center;
+}
+.d-sidebar-footer button {
+  width: 34px; height: 34px; border-radius: 8px; border: none; background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: #aaa; transition: all 0.15s;
+}
+.d-sidebar-footer button:hover { background: color-mix(in oklch, #7c5bf0 10%, transparent); color: #7c5bf0; }
+
+/* ===== Content ===== */
 .d-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-/* Search + Actions */
+/* Toolbar */
 .d-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  border-bottom: 1px solid #f0eeff;
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px 10px; border-bottom: 1px solid #f0eeff;
 }
 .d-toolbar input {
-  flex: 1; max-width: 320px;
-  padding: 8px 14px;
-  border: 1px solid #eee;
-  border-radius: 10px;
-  background: #fafaff;
-  font-size: 0.85rem;
-  outline: none;
+  padding: 6px 12px 6px 32px;
+  border: 1px solid #eee; border-radius: 8px;
+  background: color-mix(in oklch, white 70%, transparent);
+  font-size: 0.82rem; outline: none; width: 180px; transition: all 0.2s;
 }
-.d-toolbar input:focus { border-color: #7c5bf0; background: #fff; }
+.d-toolbar input:focus { border-color: #7c5bf0; width: 220px; background: #fff; }
 
-.d-toolbar-btns { display: flex; gap: 6px; }
-.d-toolbar-btns button {
-  padding: 7px 14px;
-  border-radius: 10px;
-  border: none;
-  background: #f5f3ff;
-  cursor: pointer;
-  font-size: 0.82rem;
-  color: #555;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.d-toolbar-btns button:hover { background: #edeaff; color: #7c5bf0; }
-.d-toolbar-btns button.primary { background: linear-gradient(135deg, #7c5bf0, #a855f7); color: #fff; }
+.d-toolbar-btns { display: flex; gap: 6px; margin-left: auto; align-items: center; }
 
-/* File Table */
-.d-table {
-  flex: 1;
-  overflow-y: auto;
+.d-view-toggle {
+  display: flex; gap: 2px; background: #e8e5f8; border-radius: 8px; padding: 2px;
 }
+.d-view-toggle button {
+  width: 30px; height: 28px; border-radius: 6px; border: none;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  color: #aaa; background: transparent; transition: all 0.15s;
+}
+.d-view-toggle button.active { background: #fff; color: #7c5bf0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+.d-toolbar-btns .btn {
+  padding: 6px 14px; border-radius: 8px; border: 1px solid #eee;
+  background: color-mix(in oklch, white 70%, transparent); cursor: pointer;
+  font-size: 0.82rem; color: #555; display: flex; align-items: center; gap: 6px; transition: all 0.15s; white-space: nowrap;
+}
+.d-toolbar-btns .btn:hover { background: color-mix(in oklch, #7c5bf0 10%, transparent); border-color: #7c5bf0; color: #7c5bf0; }
+.d-toolbar-btns .btn.primary { background: linear-gradient(135deg, #7c5bf0, #a855f7); color: #fff; border-color: transparent; }
+.d-toolbar-btns .btn svg { width: 16px; height: 16px; }
+
+/* File List */
+.d-table { flex: 1; overflow-y: auto; }
 .d-table-header {
-  display: flex;
-  padding: 8px 20px;
-  font-size: 0.75rem;
-  color: #aaa;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid #f0eeff;
-  background: #fafaff;
+  display: flex; padding: 8px 20px; font-size: 0.72rem; color: #aaa;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid color-mix(in oklch, #eee 80%, transparent);
 }
-.d-table-header > div:nth-child(1) { flex: 0 0 40px; } /* icon */
-.d-table-header > div:nth-child(2) { flex: 1; }        /* name */
-.d-table-header > div:nth-child(3) { flex: 0 0 140px; text-align: right; } /* date */
-.d-table-header > div:nth-child(4) { flex: 0 0 100px; text-align: right; } /* size */
-.d-table-header > div:nth-child(5) { flex: 0 0 40px; }  /* more */
+.d-table-header > div:nth-child(1) { flex: 1; }
+.d-table-header > div:nth-child(2) { flex: 0 0 100px; text-align: right; }
+.d-table-header > div:nth-child(3) { flex: 0 0 160px; text-align: right; }
+.d-table-header > div:nth-child(4) { flex: 0 0 40px; }
 
 .d-table-row {
-  display: flex;
-  align-items: center;
-  padding: 8px 20px;
-  transition: background 0.15s;
-  cursor: pointer;
+  display: flex; align-items: center; padding: 8px 20px; border-radius: 8px;
+  cursor: pointer; transition: all 0.12s;
 }
-.d-table-row:hover { background: #f8f7ff; }
-.d-table-row > div:nth-child(1) { flex: 0 0 40px; display: flex; justify-content: center; }
-.d-table-row > div:nth-child(2) { flex: 1; min-width: 0; }
-.d-table-row > div:nth-child(3) { flex: 0 0 140px; text-align: right; font-size: 0.8rem; color: #999; }
-.d-table-row > div:nth-child(4) { flex: 0 0 100px; text-align: right; font-size: 0.8rem; color: #999; }
-.d-table-row > div:nth-child(5) { flex: 0 0 40px; display: flex; justify-content: center; }
+.d-table-row:hover { background: color-mix(in oklch, #7c5bf0 6%, transparent); }
+.d-table-row > div:nth-child(1) { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.d-table-row > div:nth-child(2) { flex: 0 0 100px; text-align: right; font-size: 0.8rem; color: #999; }
+.d-table-row > div:nth-child(3) { flex: 0 0 160px; text-align: right; font-size: 0.8rem; color: #999; }
+.d-table-row > div:nth-child(4) { flex: 0 0 40px; display: flex; justify-content: center; }
 
-.file-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
-.file-icon.folder { background: #edeaff; }
-.file-icon.image { background: #e6f7ed; }
-.file-icon.video { background: #fde8e8; }
-.file-icon.doc { background: #e6effd; }
-.file-icon.zip { background: #fef3cd; }
+.file-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+.file-icon.folder { background: color-mix(in oklch, #7c5bf0 10%, transparent); }
+.file-icon.image { background: color-mix(in oklch, #22c55e 12%, transparent); }
+.file-icon.video { background: color-mix(in oklch, #ef4444 10%, transparent); }
+.file-icon.doc { background: color-mix(in oklch, #3b82f6 10%, transparent); }
+.file-icon.zip { background: color-mix(in oklch, #f59e0b 10%, transparent); }
 
 .file-name { font-weight: 500; font-size: 0.88rem; }
-.file-name .ext { color: #aaa; }
 
 .d-table-more {
-  width: 28px; height: 28px; border-radius: 50%; border: none;
-  background: transparent; cursor: pointer; opacity: 0;
-  color: #ccc; display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
+  width: 28px; height: 28px; border-radius: 50%; border: none; background: transparent;
+  cursor: pointer; color: #ccc; opacity: 0; font-size: 1rem; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
 }
 .d-table-row:hover .d-table-more { opacity: 1; }
 .d-table-more:hover { background: #f0eeff; color: #555; }
 
-/* ===== Bottom Upload Tab ===== */
+/* Upload Tab */
 .d-upload-tab {
-  border-top: 1px solid #eee;
-  background: #fafaff;
+  border-top: 1px solid color-mix(in oklch, #eee 80%, transparent);
+  background: color-mix(in oklch, white 75%, transparent);
+  backdrop-filter: blur(8px);
 }
 .d-upload-tab-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  cursor: pointer;
-  user-select: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px; cursor: pointer;
 }
-.d-upload-tab-header:hover { background: #f5f3ff; }
+.d-upload-tab-header:hover { background: color-mix(in oklch, #7c5bf0 6%, transparent); }
 .d-upload-tab-header .left { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #555; }
-.d-upload-tab-header .left .badge {
-  background: #7c5bf0; color: #fff; font-size: 0.7rem;
-  padding: 1px 8px; border-radius: 10px; font-weight: 600;
-}
-.d-upload-tab-header .arrow { font-size: 0.8rem; color: #aaa; transition: transform 0.2s; }
+.d-upload-tab-header .left .badge { background: #7c5bf0; color: #fff; font-size: 0.65rem; padding: 1px 7px; border-radius: 10px; font-weight: 600; }
+.d-upload-tab-header .arrow { font-size: 0.75rem; color: #aaa; transition: transform 0.2s; }
 .d-upload-tab-header .arrow.open { transform: rotate(180deg); }
 
-.d-upload-tab-body {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 0 20px 12px;
-}
-.d-upload-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.d-upload-item-icon { font-size: 1rem; width: 24px; text-align: center; flex-shrink: 0; }
-.d-upload-item-info { flex: 1; min-width: 0; }
-.d-upload-item-name { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.d-upload-item-bar { height: 4px; background: #eee; border-radius: 2px; margin-top: 3px; overflow: hidden; }
-.d-upload-item-bar > div {
-  height: 100%;
-  width: var(--p, 0%);
-  background: linear-gradient(90deg, #7c5bf0, #a855f7);
-  border-radius: 2px;
-  transition: width 0.3s;
-}
-.d-upload-item-bar > div.done { background: #22c55e; }
-.d-upload-item-status { font-size: 0.72rem; color: #999; flex-shrink: 0; min-width: 40px; text-align: right; }
+.d-upload-tab-body { padding: 0 20px 12px; display: flex; flex-direction: column; gap: 6px; }
+.d-upload-item { display: flex; align-items: center; gap: 10px; }
+.d-upload-item .icon { font-size: 0.95rem; width: 24px; text-align: center; flex-shrink: 0; }
+.d-upload-item .info { flex: 1; min-width: 0; }
+.d-upload-item .info .name { font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.d-upload-item .info .bar { height: 4px; background: #eee; border-radius: 2px; margin-top: 3px; overflow: hidden; }
+.d-upload-item .info .bar div { height: 100%; background: linear-gradient(90deg, #7c5bf0, #a855f7); border-radius: 2px; transition: width 0.3s; }
+.d-upload-item .info .bar div.done { background: #22c55e; }
 
-/* ===== Mobile Frame (reference) ===== */
-.mobile-row {
-  display: flex;
-  gap: 32px;
-  align-items: flex-start;
-}
+/* ===== Mobile Frame ===== */
+.mobile-row { display: flex; gap: 32px; align-items: flex-start; }
 .mobile {
   width: 340px;
-  background: #fff;
+  background: color-mix(in oklch, white 75%, transparent);
+  backdrop-filter: blur(20px);
   border-radius: 28px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 12px 40px rgba(124, 91, 240, 0.06);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: 1px solid rgba(255,255,255,0.4);
 }
 
-/* Mobile Title */
-.m-title-bar {
+.m-title {
   padding: 16px 18px 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  display: flex; justify-content: space-between;
 }
-.m-title-left h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, #1a1a2e, #7c5bf0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.m-title-left p { font-size: 0.72rem; color: #bbb; margin-top: 1px; }
-.m-title-right { display: flex; gap: 4px; }
-.m-title-right button {
-  width: 32px; height: 32px; border-radius: 50%; border: none; background: #f5f3ff;
-  cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+.m-title h1 { font-size: 1.4rem; background: linear-gradient(135deg, #1a1a2e, #7c5bf0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.m-title p { font-size: 0.72rem; color: #bbb; margin-top: 1px; }
+.m-title button { width: 32px; height: 32px; border-radius: 50%; border: none; background: #f5f3ff; cursor: pointer; }
+
+.m-storage { padding: 4px 18px 12px; display: flex; flex-direction: column; align-items: center; }
+.m-storage canvas { width: 56px; height: 56px; }
+.m-storage .nums { font-size: 0.68rem; color: #aaa; margin-top: 3px; }
+
+.m-list {
+  padding: 4px 10px 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
 }
-
-/* Mobile Storage */
-.m-storage { padding: 4px 18px 12px; }
-.m-storage .bar { height: 5px; background: #eee; border-radius: 3px; overflow: hidden; }
-.m-storage .bar div { height: 100%; width: 37%; background: linear-gradient(90deg, #7c5bf0, #a855f7); border-radius: 3px; }
-.m-storage .nums { display: flex; justify-content: space-between; font-size: 0.68rem; color: #aaa; margin-top: 3px; }
-
-/* Mobile File List */
-.m-list { padding: 4px 10px 16px; display: flex; flex-direction: column; gap: 1px; }
 .m-item {
-  display: flex; align-items: center; gap: 10px; padding: 8px 8px; border-radius: 10px;
-  transition: background 0.15s; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 6px 10px; border-radius: 10px; border: 1px solid #eee;
+  transition: all 0.15s; cursor: pointer;
 }
-.m-item:hover { background: #f8f7ff; }
-.m-item .icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
-.m-item .icon.folder { background: #edeaff; }
-.m-item .info { flex: 1; min-width: 0; }
-.m-item .info .name { font-size: 0.84rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.m-item .info .meta { font-size: 0.7rem; color: #aaa; }
-.m-item .more { opacity: 0; width: 24px; height: 24px; border-radius: 50%; border: none; background: transparent; cursor: pointer; color: #ccc; display: flex; align-items: center; justify-content: center; }
-.m-item:hover .more { opacity: 1; }
+.m-item:hover { background: #f8f7ff; border-color: #7c5bf0; }
+.m-item .icon { font-size: 1.6rem; line-height: 1; min-height: 36px; }
+.m-item .name { font-size: 0.72rem; font-weight: 500; text-align: center; overflow: hidden; text-overflow: ellipsis; max-width: 100%; white-space: nowrap; }
+.m-item .meta { font-size: 0.62rem; color: #aaa; }
 
-/* Mobile Bottom Upload Tab */
 .m-upload-tab {
   border-top: 1px solid #eee;
-  background: #fafaff;
+  background: color-mix(in oklch, #fafaff 70%, transparent);
 }
 .m-upload-tab-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 16px; cursor: pointer; font-size: 0.82rem; color: #555;
 }
-.m-upload-tab-header .left { display: flex; align-items: center; gap: 6px; }
-.m-upload-tab-header .badge { background: #7c5bf0; color: #fff; font-size: 0.65rem; padding: 1px 6px; border-radius: 8px; }
 
-.m-upload-tab-body { padding: 0 16px 10px; display: flex; flex-direction: column; gap: 6px; }
-.m-upload-item { display: flex; align-items: center; gap: 8px; }
-.m-upload-item .icon { font-size: 0.9rem; width: 20px; text-align: center; }
-.m-upload-item .info { flex: 1; min-width: 0; }
-.m-upload-item .info .name { font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.m-upload-item .info .bar { height: 3px; background: #eee; border-radius: 2px; margin-top: 3px; overflow: hidden; }
-.m-upload-item .info .bar div { height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, #7c5bf0, #a855f7); border-radius: 2px; }
-.m-upload-item .status { font-size: 0.68rem; color: #aaa; min-width: 34px; text-align: right; }
+.m-bottom-nav {
+  display: flex; border-top: 1px solid #eee; padding: 6px 0 10px;
+  background: color-mix(in oklch, white 85%, transparent);
+  backdrop-filter: blur(12px);
+}
+.m-bottom-nav a {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 2px; padding: 4px 0; font-size: 0.6rem; color: #aaa; cursor: pointer; text-decoration: none;
+}
+.m-bottom-nav a.active { color: #7c5bf0; }
+.m-bottom-nav svg { width: 20px; height: 20px; }
 
 .label { text-align: center; font-size: 0.85rem; color: #999; margin-top: 8px; }
 .label strong { color: #7c5bf0; }
+hr { border: none; border-top: 1px solid #ddd; width: 100%; }
 </style>
 </head>
 <body>
-  <h2>📁 文件库 · 设计稿 <span>v2</span></h2>
+  <h2>🗄️ 文件库 · 设计稿 <span>v3</span></h2>
+  <p class="desc">Canvas 粒子背景 + 毛玻璃界面 + Canvas 存储环图 + 网格/列表视图切换 + 拖拽上传 + 骨架屏加载</p>
 
-  <!-- Desktop Version -->
   <div class="desktop">
-    <!-- Title Bar -->
-    <div class="d-title-bar">
-      <div class="d-title-left">
-        <h1>📁 文件库</h1>
-        <span class="domain">drive.7988798.xyz</span>
-      </div>
-      <div class="d-title-right">
-        <button>🌓</button>
-        <button>⚙️</button>
-        <button>👤</button>
-      </div>
-    </div>
-
-    <!-- Body -->
     <div class="d-body">
-      <!-- Sidebar -->
       <div class="d-sidebar">
-        <button class="d-sidebar-item active"><span class="icon">🗂️</span> 全部文件</button>
-        <button class="d-sidebar-item"><span class="icon">🖼️</span> 图片</button>
-        <button class="d-sidebar-item"><span class="icon">🎬</span> 视频</button>
-        <button class="d-sidebar-item"><span class="icon">📄</span> 文档</button>
-        <button class="d-sidebar-item"><span class="icon">📦</span> 压缩包</button>
-        <button class="d-sidebar-item"><span class="icon">🎵</span> 音频</button>
+        <div class="d-sidebar-brand">
+          <span class="icon">🗄️</span>
+          <div>
+            <div class="title">文件库</div>
+            <span class="domain">drive.7988798.xyz</span>
+          </div>
+        </div>
+
+        <div class="d-sidebar-nav">
+          <div class="d-sidebar-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            全部文件
+          </div>
+          <div class="d-sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            图片
+          </div>
+          <div class="d-sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            文档
+          </div>
+          <div class="d-sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            视频
+          </div>
+          <div class="d-sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            音频
+          </div>
+          <div class="d-sidebar-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            压缩包
+          </div>
+        </div>
+
         <div class="d-sidebar-spacer"></div>
-        <div class="sidebar-storage">
-          <div class="label">存储空间</div>
-          <div class="bar"><div></div></div>
-          <div class="nums"><span>已用 3.7 GB</span><span>总计 10 GB</span></div>
+        <div class="d-sidebar-storage">
+          <canvas class="d-storage-canvas" width="80" height="80"></canvas>
+          <div class="d-storage-info"><span class="used">3.7 GB</span><span class="total">/ 10 GB</span></div>
+          <div class="d-storage-bar"><div></div></div>
+        </div>
+        <div class="d-sidebar-footer">
+          <button>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+          <button>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="12" r="3"/><circle cx="5" cy="12" r="3"/></svg>
+          </button>
         </div>
       </div>
 
-      <!-- Content -->
       <div class="d-content">
-        <!-- Toolbar -->
         <div class="d-toolbar">
           <input type="text" placeholder="🔍 搜索文件..." />
           <div class="d-toolbar-btns">
-            <button class="primary">📤 上传</button>
-            <button>📁 新建文件夹</button>
-            <button>🔄 刷新</button>
-            <button>📋 批量选择</button>
+            <div class="d-view-toggle">
+              <button class="active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>
+              </button>
+              <button>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </button>
+            </div>
+            <button class="btn primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              上传
+            </button>
+            <button class="btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+              新建
+            </button>
+            <button class="btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </button>
           </div>
         </div>
 
-        <!-- Table -->
         <div class="d-table">
           <div class="d-table-header">
-            <div></div>
             <div>文件名</div>
-            <div>修改日期</div>
             <div>大小</div>
+            <div>修改日期</div>
             <div></div>
           </div>
           <div class="d-table-row">
-            <div><span class="file-icon folder">📁</span></div>
-            <div><span class="file-name">我的文档</span></div>
-            <div>2026-06-19 15:30</div>
+            <div><span class="file-icon folder">📁</span><span class="file-name">我的文档</span></div>
             <div>—</div>
+            <div>2026-06-19 15:30</div>
             <div><button class="d-table-more">⋯</button></div>
           </div>
           <div class="d-table-row">
-            <div><span class="file-icon image">🖼️</span></div>
-            <div><span class="file-name">2025-旅行照片集</span></div>
-            <div>2026-06-18 09:15</div>
+            <div><span class="file-icon image">🖼️</span><span class="file-name">2025-旅行照片集</span></div>
             <div>234 MB</div>
+            <div>2026-06-18 09:15</div>
             <div><button class="d-table-more">⋯</button></div>
           </div>
           <div class="d-table-row">
-            <div><span class="file-icon video">🎬</span></div>
-            <div><span class="file-name">会议记录<span class="ext">.mp4</span></span></div>
-            <div>2026-06-15 14:20</div>
+            <div><span class="file-icon video">🎬</span><span class="file-name">会议记录.mp4</span></div>
             <div>1.2 GB</div>
+            <div>2026-06-15 14:20</div>
             <div><button class="d-table-more">⋯</button></div>
           </div>
           <div class="d-table-row">
-            <div><span class="file-icon doc">📄</span></div>
-            <div><span class="file-name">项目报告-最终版<span class="ext">.pdf</span></span></div>
-            <div>2026-06-10 11:00</div>
+            <div><span class="file-icon doc">📄</span><span class="file-name">项目报告-最终版.pdf</span></div>
             <div>2.4 MB</div>
+            <div>2026-06-10 11:00</div>
             <div><button class="d-table-more">⋯</button></div>
           </div>
           <div class="d-table-row">
-            <div><span class="file-icon zip">📦</span></div>
-            <div><span class="file-name">backup-2026-06<span class="ext">.zip</span></span></div>
-            <div>2026-06-05 22:00</div>
+            <div><span class="file-icon zip">📦</span><span class="file-name">backup-2026-06.zip</span></div>
             <div>856 MB</div>
+            <div>2026-06-05 22:00</div>
             <div><button class="d-table-more">⋯</button></div>
           </div>
         </div>
 
-        <!-- Bottom Upload Tab -->
         <div class="d-upload-tab">
           <div class="d-upload-tab-header">
             <div class="left">
-              📤 上传进度 <span class="badge">3</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              上传进度 <span class="badge">3</span>
             </div>
-            <span class="arrow">▾</span>
+            <span class="arrow open">▾</span>
           </div>
           <div class="d-upload-tab-body">
             <div class="d-upload-item">
-              <span class="d-upload-item-icon">🖼️</span>
-              <div class="d-upload-item-info">
-                <div class="d-upload-item-name">风景照-photo-01.jpg</div>
-                <div class="d-upload-item-bar"><div style="--p: 76%"></div></div>
-              </div>
-              <span class="d-upload-item-status">76%</span>
+              <span class="icon">🖼️</span>
+              <div class="info"><div class="name">风景照-photo-01.jpg</div><div class="bar"><div style="width:76%"></div></div></div>
+              <span style="font-size:0.72rem;color:#999">76%</span>
             </div>
             <div class="d-upload-item">
-              <span class="d-upload-item-icon">📄</span>
-              <div class="d-upload-item-info">
-                <div class="d-upload-item-name">项目文档-final.pdf</div>
-                <div class="d-upload-item-bar"><div style="--p: 42%"></div></div>
-              </div>
-              <span class="d-upload-item-status">42%</span>
+              <span class="icon">📄</span>
+              <div class="info"><div class="name">项目文档-final.pdf</div><div class="bar"><div style="width:42%"></div></div></div>
+              <span style="font-size:0.72rem;color:#999">42%</span>
             </div>
             <div class="d-upload-item">
-              <span class="d-upload-item-icon">📦</span>
-              <div class="d-upload-item-info">
-                <div class="d-upload-item-name">large-backup-2026.zip</div>
-                <div class="d-upload-item-bar"><div class="done" style="--p: 100%"></div></div>
-              </div>
-              <span class="d-upload-item-status">✅ 完成</span>
+              <span class="icon">📦</span>
+              <div class="info"><div class="name">large-backup-2026.zip</div><div class="bar"><div class="done" style="width:100%"></div></div></div>
+              <span style="font-size:0.72rem;color:#22c55e">✅</span>
             </div>
           </div>
         </div>
@@ -446,79 +405,79 @@ h2 span { color: #7c5bf0; }
     </div>
   </div>
 
-  <p class="label">💡 电脑版：左侧分类侧栏 + 容量条 + 表格列表 + 底部上传进度 Tab</p>
+  <p class="label">💡 Canvas 粒子背景 · 毛玻璃容器 · SVG 图标导航 · Canvas 存储环图 · 列表/网格双视图 · 拖拽上传覆盖层 · 骨架屏加载 · 底部上传 Tab</p>
 
-  <!-- Mobile Version -->
   <div class="mobile-row">
     <div class="mobile">
-      <div class="m-title-bar">
-        <div class="m-title-left">
+      <div class="m-title">
+        <div>
           <h1>文件库</h1>
           <p>drive.7988798.xyz</p>
         </div>
-        <div class="m-title-right">
-          <button>🌓</button>
-          <button>⚙️</button>
-        </div>
+        <button>🌓</button>
       </div>
       <div class="m-storage">
-        <div class="bar"><div></div></div>
+        <canvas width="80" height="80"></canvas>
         <div class="nums"><span>已用 3.7 GB</span><span>37% · 10 GB</span></div>
       </div>
       <div class="m-list">
         <div class="m-item">
-          <span class="icon folder">📁</span>
-          <div class="info"><div class="name">我的文档</div><div class="meta">15 个文件</div></div>
-          <button class="more">⋯</button>
+          <span class="icon" style="background:#edeaff;border-radius:8px;padding:6px 8px;">📁</span>
+          <div class="name">我的文档</div>
+          <div class="meta">15 文件</div>
         </div>
         <div class="m-item">
-          <span class="icon" style="background:#e6f7ed;">🖼️</span>
-          <div class="info"><div class="name">2025-旅行照片</div><div class="meta">2026-06-18 · 234 MB</div></div>
-          <button class="more">⋯</button>
+          <span class="icon" style="background:#e6f7ed;border-radius:8px;padding:6px 8px;">🖼️</span>
+          <div class="name">旅行照片</div>
+          <div class="meta">234 MB</div>
         </div>
         <div class="m-item">
-          <span class="icon" style="background:#fde8e8;">🎬</span>
-          <div class="info"><div class="name">会议记录.mp4</div><div class="meta">2026-06-15 · 1.2 GB</div></div>
-          <button class="more">⋯</button>
+          <span class="icon" style="background:#fde8e8;border-radius:8px;padding:6px 8px;">🎬</span>
+          <div class="name">会议记录.mp4</div>
+          <div class="meta">1.2 GB</div>
         </div>
         <div class="m-item">
-          <span class="icon" style="background:#e6effd;">📄</span>
-          <div class="info"><div class="name">项目报告-最终版.pdf</div><div class="meta">2026-06-10 · 2.4 MB</div></div>
-          <button class="more">⋯</button>
+          <span class="icon" style="background:#e6effd;border-radius:8px;padding:6px 8px;">📄</span>
+          <div class="name">项目报告.pdf</div>
+          <div class="meta">2.4 MB</div>
         </div>
         <div class="m-item">
-          <span class="icon" style="background:#fef3cd;">📦</span>
-          <div class="info"><div class="name">backup-2026-06.zip</div><div class="meta">2026-06-05 · 856 MB</div></div>
-          <button class="more">⋯</button>
+          <span class="icon" style="background:#fef3cd;border-radius:8px;padding:6px 8px;">📦</span>
+          <div class="name">backup.zip</div>
+          <div class="meta">856 MB</div>
         </div>
       </div>
-      <!-- Mobile Upload Tab -->
       <div class="m-upload-tab">
         <div class="m-upload-tab-header">
-          <div class="left">📤 上传进度 <span class="badge">3</span></div>
+          <span>📤 上传进度 <span style="background:#7c5bf0;color:#fff;font-size:0.65rem;padding:1px 6px;border-radius:8px">3</span></span>
           <span>▾</span>
         </div>
-        <div class="m-upload-tab-body">
-          <div class="m-upload-item">
-            <span class="icon">🖼️</span>
-            <div class="info"><div class="name">风景照-photo-01.jpg</div><div class="bar"><div style="--p:76%"></div></div></div>
-            <span class="status">76%</span>
-          </div>
-          <div class="m-upload-item">
-            <span class="icon">📄</span>
-            <div class="info"><div class="name">项目文档-final.pdf</div><div class="bar"><div style="--p:42%"></div></div></div>
-            <span class="status">42%</span>
-          </div>
-          <div class="m-upload-item">
-            <span class="icon">📦</span>
-            <div class="info"><div class="name">large-backup-2026.zip</div><div class="bar"><div style="--p:100%; background:#22c55e; border-radius:2px; width:100%; height:100%;"></div></div></div>
-            <span class="status">✅</span>
-          </div>
-        </div>
+      </div>
+      <div class="m-bottom-nav">
+        <a class="active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          文件
+        </a>
+        <a>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          图片
+        </a>
+        <a>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          视频
+        </a>
+        <a>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          最近
+        </a>
+        <a>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="12" r="3"/><circle cx="5" cy="12" r="3"/></svg>
+          更多
+        </a>
       </div>
     </div>
   </div>
 
-  <p class="label">💡 手机版：搜索 + 分类过滤 + 上传进度折叠在底部 Tab</p>
+  <p class="label">💡 手机版：底栏导航 + 网格卡片 + Canvas 存储环图 + 顶部品牌区</p>
 </body>
 </html>
