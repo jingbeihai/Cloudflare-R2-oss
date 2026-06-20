@@ -13,6 +13,18 @@
       </div>
     </Transition>
 
+    <nav class="unified-nav">
+      <div class="unified-nav-inner">
+        <a class="unified-nav-logo" href="https://7988798.xyz">Bin</a>
+        <div class="unified-nav-links">
+          <a class="unified-nav-link" href="https://7988798.xyz">主页</a>
+          <a class="unified-nav-link" href="https://blog.7988798.xyz">博客</a>
+          <a class="unified-nav-link active" href="/">网盘</a>
+          <a class="unified-nav-link" href="https://github.com/jingbeihai" target="_blank">GitHub</a>
+        </div>
+      </div>
+    </nav>
+
     <div class="app-glass">
       <aside class="sidebar">
         <div class="sidebar-brand">
@@ -650,7 +662,59 @@ export default {
 
 <style>
 /* ===== Layout ===== */
-.app-layout { height: 100%; display: flex; position: relative; overflow: hidden; }
+.app-layout { height: 100%; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+/* ===== Unified Nav ===== */
+.unified-nav {
+  flex-shrink: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  background: color-mix(in oklch, var(--bg-primary) 70%, transparent);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 10;
+}
+.unified-nav-inner {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.unified-nav-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.unified-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.unified-nav-link {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s var(--ease-out);
+}
+.unified-nav-link:hover {
+  color: var(--text-primary);
+  background: var(--accent-subtle);
+}
+.unified-nav-link.active {
+  color: #fff;
+  background: var(--accent);
+}
 
 /* ===== Particle Canvas Background ===== */
 .particle-bg {
@@ -661,7 +725,7 @@ export default {
 /* ===== Glass Container ===== */
 .app-glass {
   position: relative; z-index: 1;
-  display: flex; height: 100%; width: 100%;
+  display: flex; flex: 1; min-height: 0; width: 100%;
   background: color-mix(in oklch, var(--bg-primary) 78%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
